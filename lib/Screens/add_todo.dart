@@ -39,7 +39,8 @@ class _AddTodoState extends State<AddTodo> {
                   GestureDetector(
                     onTap: () {
                       ///Add task button
-                     
+                      ///
+                      print(_task.text);
                     },
                     child: Container(
                         padding: const EdgeInsets.all(15),
