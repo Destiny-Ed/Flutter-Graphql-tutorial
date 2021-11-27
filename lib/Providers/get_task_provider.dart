@@ -1,12 +1,14 @@
 import 'package:flutter/foundation.dart';
-import 'package:graphql_app/Schemas/add_task_schema.dart';
+import 'package:graphql_app/Schemas/get_task_schema.dart';
 import 'package:graphql_app/Schemas/urlEndpoint.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-class AddTaskProvider extends ChangeNotifier {
+class GetTaskProvider extends ChangeNotifier {
   bool _status = false;
 
   String _response = '';
+
+  dynamic _list = [];
 
   bool get getStatus => _status;
 
@@ -15,18 +17,16 @@ class AddTaskProvider extends ChangeNotifier {
   final EndPoint _point = EndPoint();
 
   ///Add task method
-  void addTask({String? task, String? status}) async {
+  void getTask() async {
     _status = true;
     _response = "Please wait...";
     notifyListeners();
 
     ValueNotifier<GraphQLClient> _client = _point.getClient();
 
-    QueryResult result = await _client.value.mutate(
-        MutationOptions(document: gql(AddTaskSchema.addTaskJson), variables: {
-      'task': task,
-      'status': status,
-    }));
+    QueryResult result = await _client.value.mutate(MutationOptions(
+      document: gql(GetTaskSchema.getTaskJson),
+    ));
 
     if (result.hasException) {
       print(result.exception);
@@ -40,8 +40,18 @@ class AddTaskProvider extends ChangeNotifier {
     } else {
       print(result.data);
       _status = false;
-      _response = "Task was successfully added";
+      _list = result.data;
       notifyListeners();
+    }
+  }
+
+  dynamic getResponseData() {
+    if (_list.isNotEmpty) {
+      final data = _list;
+
+      return data['getTodos'] ?? {};
+    } else {
+      return {};
     }
   }
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:graphql_app/Providers/add_task_provider.dart';
+import 'package:provider/provider.dart';
 
 class AddTodo extends StatefulWidget {
   const AddTodo({Key? key}) : super(key: key);
@@ -36,20 +38,41 @@ class _AddTodoState extends State<AddTodo> {
                   ),
 
                   ///Add task button
-                  GestureDetector(
-                    onTap: () {
-                      ///Add task button
-                      ///
-                      print(_task.text);
-                    },
-                    child: Container(
-                        padding: const EdgeInsets.all(15),
-                        margin: const EdgeInsets.all(30),
-                        decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(10)),
-                        child: const Text('Save Task')),
-                  )
+                  Consumer<AddTaskProvider>(builder: (context, task, child) {
+                    WidgetsBinding.instance!.addPostFrameCallback((_) {
+                      if (task.getResponse != '') {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(task.getResponse)));
+
+                        task.clear();
+                      }
+                    });
+
+                    return GestureDetector(
+                      onTap: task.getStatus == true
+                          ? null
+                          : () {
+                              ///Add task button
+                              ///
+                              print(_task.text);
+                              if (_task.text.isNotEmpty) {
+                                task.addTask(
+                                    task: _task.text.trim(), status: 'Pending');
+                              }
+                            },
+                      child: Container(
+                          padding: const EdgeInsets.all(15),
+                          margin: const EdgeInsets.all(30),
+                          decoration: BoxDecoration(
+                              color: task.getStatus == true
+                                  ? Colors.grey
+                                  : Colors.blue,
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Text(task.getStatus == true
+                              ? 'Loading...'
+                              : 'Save Task')),
+                    );
+                  })
                 ],
               ),
             ),
