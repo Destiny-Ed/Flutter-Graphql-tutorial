@@ -18,9 +18,7 @@ class GetTaskProvider extends ChangeNotifier {
 
   ///Add task method
   void getTask() async {
-    _status = true;
-    _response = "Please wait...";
-    notifyListeners();
+    
 
     ValueNotifier<GraphQLClient> _client = _point.getClient();
 
@@ -48,6 +46,8 @@ class GetTaskProvider extends ChangeNotifier {
   dynamic getResponseData() {
     if (_list.isNotEmpty) {
       final data = _list;
+
+      print(data['getTodos']);
 
       return data['getTodos'] ?? {};
     } else {
