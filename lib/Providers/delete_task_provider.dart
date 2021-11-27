@@ -1,14 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'package:graphql_app/Schemas/get_task_schema.dart';
+import 'package:graphql_app/Schemas/delete_task_schema.dart';
 import 'package:graphql_app/Schemas/urlEndpoint.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-class GetTaskProvider extends ChangeNotifier {
+class DeleteTaskProvider extends ChangeNotifier {
   bool _status = false;
 
   String _response = '';
-
-  dynamic _list = [];
 
   bool get getStatus => _status;
 
@@ -17,12 +15,19 @@ class GetTaskProvider extends ChangeNotifier {
   final EndPoint _point = EndPoint();
 
   ///Add task method
-  void getTask(bool isLocal) async {
+  void deleteTask({
+    int? todoId,
+  }) async {
+    _status = true;
+    _response = "Please wait...";
+    notifyListeners();
+
     ValueNotifier<GraphQLClient> _client = _point.getClient();
 
-    QueryResult result = await _client.value.query(QueryOptions(
-        document: gql(GetTaskSchema.getTaskJson),
-        fetchPolicy: isLocal == true ? null : FetchPolicy.networkOnly));
+    QueryResult result = await _client.value.mutate(
+        MutationOptions(document: gql(DeleteTaskSchema.deleteJson), variables: {
+      'todoId': todoId,
+    }));
 
     if (result.hasException) {
       print(result.exception);
@@ -36,20 +41,8 @@ class GetTaskProvider extends ChangeNotifier {
     } else {
       print(result.data);
       _status = false;
-      _list = result.data;
+      _response = "Task was successfully Deleted";
       notifyListeners();
-    }
-  }
-
-  dynamic getResponseData() {
-    if (_list.isNotEmpty) {
-      final data = _list;
-
-      print(data['getTodos']);
-
-      return data['getTodos'] ?? {};
-    } else {
-      return {};
     }
   }
 

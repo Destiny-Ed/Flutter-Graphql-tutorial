@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:graphql_app/Providers/delete_task_provider.dart';
 import 'package:graphql_app/Providers/get_task_provider.dart';
 import 'package:graphql_app/Screens/add_todo.dart';
 import 'package:provider/provider.dart';
@@ -21,13 +22,13 @@ class _HomePageState extends State<HomePage> {
       body: Consumer<GetTaskProvider>(builder: (context, task, child) {
         if (isFetched == false) {
           ///Fetch the data
-          task.getTask();
+          task.getTask(true);
 
           Future.delayed(const Duration(seconds: 3), () => isFetched = true);
         }
         return RefreshIndicator(
           onRefresh: () {
-            task.getTask();
+            task.getTask(false);
             return Future.delayed(const Duration(seconds: 3));
           },
           child: CustomScrollView(
@@ -57,11 +58,35 @@ class _HomePageState extends State<HomePage> {
                               backgroundColor: Colors.grey,
                               child: Text(data['id'].toString()),
                             ),
-                            trailing: IconButton(
-                                onPressed: () {
-                                  ///Delete task
-                                },
-                                icon: const Icon(Icons.delete)),
+                            trailing: Consumer<DeleteTaskProvider>(
+                                builder: (context, delete, child) {
+                              WidgetsBinding.instance!
+                                  .addPostFrameCallback((_) {
+                                if (delete.getResponse != '') {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(delete.getResponse)));
+
+                                  delete.clear();
+                                }
+                              });
+                              return IconButton(
+                                  onPressed: () {
+                                    ///Delete task
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
+                                      content: const Text(
+                                          "Are you sure you want to delete task?"),
+                                      action: SnackBarAction(
+                                          label: "Delete Now",
+                                          onPressed: () {
+                                            delete.deleteTask(
+                                                todoId: data['id']);
+                                          }),
+                                    ));
+                                  },
+                                  icon: const Icon(Icons.delete));
+                            }),
                           );
                         }),
                       )),
