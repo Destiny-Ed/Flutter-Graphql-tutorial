@@ -5,7 +5,7 @@ import 'Screens/home_page.dart';
 
 void main() async {
  
- await initHiveForFlutter();
+  await initHiveForFlutter();
 
   runApp(const MyApp());
 }
